@@ -1,4 +1,4 @@
-/*import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 export const ensureAuthenticated = (req, res, next) => {
   if (!req.headers["authorization"]) {
@@ -12,4 +12,4 @@ export const ensureAuthenticated = (req, res, next) => {
       .status(403)
       .json({ message: "Token is not valid or it's expired" });
   }
-};*/
+};
