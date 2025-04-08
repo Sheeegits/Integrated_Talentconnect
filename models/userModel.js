@@ -142,12 +142,7 @@ const CollegeAuthSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-const StudentdetailsSchema = new Schema({
-  studentname: { type: String, required: true },
-  studentemail: { type: String, required: true },
-  studentlocation: { type: String, required: true },
-  studentphoneno: { type: Number, required: true },
-});
+
 
 const ReviewSchema = new Schema({
   studentemail: { type: String, required: true },
@@ -204,10 +199,6 @@ export const Filterbycountry = mongoose.model(
 
 const UserModel = mongoose.model("students", UserSchema);
 const CollegeAuthModel = mongoose.model("collegeauth", CollegeAuthSchema);
-const StudentdetailsModel = mongoose.model(
-  "studentdetail",
-  StudentdetailsSchema
-);
 const Filterbyrank = mongoose.model("filterbyrank", filterbyrank);
 const ReviewModel = mongoose.model("reviews", ReviewSchema);
 const CutoffModel = mongoose.model("cutoffs", CutoffsSchema);
@@ -219,7 +210,6 @@ export {
   UserModel,
   // CollegeModel,
   CollegeAuthModel,
-  StudentdetailsModel,
   ReviewModel,
   CutoffModel,
   ScholarshipModel,

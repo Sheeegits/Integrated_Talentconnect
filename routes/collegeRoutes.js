@@ -3,7 +3,7 @@ import upload from "../middlewares/upload.js";
 import validateCollege from "../middlewares/validateCollege.js";
 
 // Controllers
-import { addColleges, getColleges, updateCollege } from "../controllers/collegeController.js";
+import { addColleges, getColleges, updateCollege, filterColleges } from "../controllers/collegeController.js";
 import { addCourse, getCoursesByCollege, updateCourse } from "../controllers/courseController.js";
 import { addFaculty, getFacultyByCollege, updateFaculty } from "../controllers/facultyController.js";
 import { addPlacementData, getPlacementByCollege, updatePlacement } from "../controllers/placementController.js";
@@ -12,6 +12,8 @@ import { addHostel, getHostelByCollege, updateHostel } from "../controllers/host
 import { addCampus, getCampusByCollege, updateCampus } from "../controllers/campusController.js";
 import { filterCollegesByStream } from "../controllers/filterByStream.js";
 import { filterCollegesByRanking } from "../controllers/filterByRanking.js";
+import { predictColleges } from "../controllers/collegePredictorController.js";
+
 
 // User Authentication Controllers
 import {
@@ -19,7 +21,6 @@ import {
   loginUser,
   registerCollege,
   loginCollege,
-  studentdetails,
   reviewdetails,
   cutoffdetails,
   scholarshipdetails,
@@ -31,7 +32,6 @@ import {
   studentLoginValidate,
   collegeRegisterValidate,
   collegeLoginValidate,
-  studentdetailsValidate,
   reviewsValidate,
   cutoffsValidate,
   scholarshipsValidate,
@@ -43,6 +43,10 @@ const router = express.Router();
 router.post("/add", upload.fields([{ name: "image" }, { name: "brochure" }]), validateCollege, addColleges);
 router.get("/all", getColleges);
 router.put("/update/:collegeId", updateCollege);
+
+//filter
+router.post("/filter", filterColleges);
+
 
 // ✅ Courses & Fees Routes
 router.post("/courses/add", addCourse);
@@ -78,14 +82,19 @@ router.put("/campus/update/:campusId", upload.fields([{ name: "photos" }, { name
 router.get("/filter-by-stream", filterCollegesByStream); // Filter by Stream
 router.get("/filter-by-ranking", filterCollegesByRanking); // Filter by Ranking
 
+//predictor route
+router.post("/predict", predictColleges);
+
+
 // ✅ Authentication & User Routes
 router.post("/register", studentRegisterValidate, registerUser);
 router.post("/login", studentLoginValidate, loginUser);
 router.post("/collegeregister", collegeRegisterValidate, registerCollege);
 router.post("/collegelogin", collegeLoginValidate, loginCollege);
-router.post("/studentdetails", studentdetailsValidate, studentdetails);
 router.post("/reviews", reviewsValidate, reviewdetails);
 router.post("/cutoffs", cutoffsValidate, cutoffdetails);
 router.post("/scholarships", scholarshipsValidate, scholarshipdetails);
+
+
 
 export default router;

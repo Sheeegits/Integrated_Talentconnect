@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import {
   UserModel,
   CollegeAuthModel,
-  StudentdetailsModel,
   ReviewModel,
   CutoffModel,
   ScholarshipModel,
@@ -137,33 +136,6 @@ export const loginCollege = async (req, res) => {
   }
 };
 
-export const studentdetails = async (req, res) => {
-  try {
-    const { studentname, studentemail, studentphoneno, studentlocation } =
-      req.body;
-    const existingStudent = await StudentdetailsModel.findOne({ studentemail });
-    if (existingStudent) {
-      return res
-        .status(400)
-        .json({ message: "Student profile already exists" });
-    }
-    const newStudent = new StudentdetailsModel({
-      studentname,
-      studentemail,
-      studentphoneno,
-      studentlocation,
-    });
-    await newStudent.save();
-    res.status(201).json({
-      message: "Student profile created successfully",
-      student: newStudent,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
-  }
-};
 
 export const reviewdetails = async (req, res) => {
   try {

@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import collegeRoutes from "./routes/collegeRoutes.js";
+import studentRoutes from "./routes/studentRoutes.js"; // ✅ Import student routes
 
 dotenv.config();
 connectDB();
@@ -14,14 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-
-
+// ✅ Routes
 app.use("/api/colleges", collegeRoutes);
-app.use(express.urlencoded({ extended: true }));
+app.use("/api/students", studentRoutes); // ✅ Use student routes
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 
 app.use((err, req, res, next) => {
     console.error("Global Error:", err);

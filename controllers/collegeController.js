@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import College from "../models/College.js";
+import Course from "../models/course.js";
 
-// ✅ Add College with Stream
-// ✅ Add College with Stream and Country
+// ✅ Add College with Type (Private/Government)
 export const addColleges = async (req, res) => {
   try {
     console.log("Received Body:", req.body);
@@ -18,33 +18,40 @@ export const addColleges = async (req, res) => {
     const name = body.name;
     const city = body.city;
     const state = body.state;
-    const country = body.country; // ✅ Added country field
+    const country = body.country;
     const ranking = body.ranking;
-    const collegeInfo = body.collegeinfo || body.collegeInfo; // Handle both cases
-    const stream = body.stream; // ✅ Added stream field
+    const collegeInfo = body.collegeinfo || body.collegeInfo;
+    const stream = body.stream;
+    const type = body.type; // ✅ Added type field
 
     // ✅ Extract file URLs from `req.files`
     const image = req.files?.image ? req.files.image[0].path : null;
     const brochure = req.files?.brochure ? req.files.brochure[0].path : null;
 
     // ✅ Validate all required fields
-    if (!name || !state || !city || !ranking || !collegeInfo || !image || !brochure || !stream || !country) {
+    if (!name || !state || !city || !ranking || !collegeInfo || !image || !brochure || !stream || !country || !type) {
       return res.status(400).json({
-        message: "All fields (name, city, state, country, ranking, collegeInfo, image, brochure, stream) are required",
+        message: "All fields (name, city, state, country, ranking, collegeInfo, image, brochure, stream, type) are required",
       });
     }
 
-    // ✅ Create new college entry with stream and country
+    // ✅ Validate type (should be either Private or Government)
+    if (!["Private", "Government"].includes(type)) {
+      return res.status(400).json({ message: "Type should be either 'Private' or 'Government'" });
+    }
+
+    // ✅ Create new college entry with type
     const newCollege = new College({
       name,
       city,
       state,
-      country, // ✅ Added country field
+      country,
       ranking,
       collegeInfo,
       image,
       brochure,
-      stream, // ✅ Added stream field
+      stream,
+      type // ✅ Added type field
     });
 
     await newCollege.save();
@@ -63,7 +70,6 @@ export const addColleges = async (req, res) => {
     });
   }
 };
-
 
 // ✅ Get All Colleges
 export const getColleges = async (req, res) => {
@@ -85,7 +91,12 @@ export const updateCollege = async (req, res) => {
       return res.status(400).json({ message: "Invalid College ID format" });
     }
 
-    const { name, city, state,country, ranking, collegeInfo, stream } = req.body;
+    const { name, city, state, country, ranking, collegeInfo, stream, type } = req.body;
+
+    // ✅ Validate type (if provided)
+    if (type && !["Private", "Government"].includes(type)) {
+      return res.status(400).json({ message: "Type should be either 'Private' or 'Government'" });
+    }
 
     // ✅ Handle file updates (if new images are uploaded)
     const image = req.files?.image ? req.files.image[0].path : undefined;
@@ -94,7 +105,7 @@ export const updateCollege = async (req, res) => {
     // ✅ Update the college (only update provided fields)
     const updatedCollege = await College.findByIdAndUpdate(
       collegeId, 
-      { name, state, city, ranking, collegeInfo, ...(image && { image }), ...(brochure && { brochure }) }, 
+      { name, state, city, ranking, collegeInfo, stream, type, ...(image && { image }), ...(brochure && { brochure }) }, 
       { new: true, runValidators: true }
     );
 
@@ -110,5 +121,50 @@ export const updateCollege = async (req, res) => {
   } catch (error) {
     console.error("Error updating college:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// ✅ Filter Colleges by Type, Stream, and Course
+export const filterColleges = async (req, res) => {
+  try {
+    const { interestedStreams, coursesInterested, type } = req.body;
+
+    // ✅ Validate interestedStreams
+    if (!interestedStreams || !Array.isArray(interestedStreams) || interestedStreams.length === 0) {
+      return res.status(400).json({ message: "interestedStreams should be a non-empty array." });
+    }
+
+    // ✅ Validate type (if provided)
+    if (type && !["Private", "Government"].includes(type)) {
+      return res.status(400).json({ message: "Type should be either 'Private' or 'Government'" });
+    }
+
+    // ✅ Build query based on filters
+    const query = { stream: { $in: interestedStreams } };
+    if (type) {
+      query.type = type;
+    }
+
+    // ✅ Find colleges matching the interested streams and type
+    const colleges = await College.find(query);
+    let filteredColleges = colleges;
+
+    // ✅ If coursesInterested is provided, filter further
+    if (coursesInterested && Array.isArray(coursesInterested) && coursesInterested.length > 0) {
+      const courses = await Course.find({ courseName: { $in: coursesInterested } }).populate("collegeId");
+
+      // ✅ Extract unique college IDs from courses
+      const collegeIdsFromCourses = [...new Set(courses.map(course => course.collegeId._id.toString()))];
+
+      // ✅ Filter colleges that match streams, type, or have courses of interest
+      filteredColleges = colleges.filter(college => 
+        collegeIdsFromCourses.includes(college._id.toString())
+      );
+    }
+
+    res.status(200).json({ message: "Filtered colleges retrieved successfully", colleges: filteredColleges });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

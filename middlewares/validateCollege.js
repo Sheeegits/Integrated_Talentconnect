@@ -38,8 +38,8 @@ const validateCollege = (req, res, next) => {
     });
   }
 
-  // ✅ Validate stream values
-  const validStreams = ["Engineering", "Medical", "Law", "Graduation"];
+  // ✅ Validate stream values (added "Management")
+  const validStreams = ["Engineering", "Medical", "Law", "Graduation", "Management"];
   if (!validStreams.includes(stream)) {
     return res.status(400).json({ message: `Invalid stream. Allowed values: ${validStreams.join(", ")}` });
   }
